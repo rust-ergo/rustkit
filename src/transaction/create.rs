@@ -1,13 +1,13 @@
 use anyhow::Result;
 use ergo_chain_types::{Header, PreHeader, BlockId, EcPoint, Votes};
 use ergo_lib::{ergotree_ir::chain::ergo_box::ErgoBox, wallet::{box_selector::{SimpleBoxSelector, BoxSelection, BoxSelector}, tx_builder::TxBuilder, signing::TransactionContext, multi_sig::TransactionHintsBag}, chain::{ergo_box::box_builder::ErgoBoxCandidateBuilder, transaction::{unsigned::UnsignedTransaction, Transaction}, ergo_state_context::ErgoStateContext}};
-use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate}, token::{Token, TokenAmount, TokenId}, address::{Address, AddressEncoder, NetworkPrefix}}, ergo_tree::ErgoTree};
+use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate}, token::{Token, TokenAmount, TokenId}, address::{Address}}, ergo_tree::ErgoTree};
 
 use explorer::endpoints::get_current_height;
 use reqwest::blocking::{Client, Response};
 use wallet::wallet::RustKitWallet;
 
-use crate::{explorer, node, utils::consts::MAINNET_EXPLORER_API_BASE_URL};
+use crate::{explorer, node, utils::consts::MAINNET_EXPLORER_API_BASE_URL, address::create::{convert_address_str_to_address, convert_address_to_ergo_tree}};
 use crate::wallet;
 
 struct Reciver {
@@ -242,16 +242,4 @@ fn create_preheader(header: &Header) -> PreHeader {
     let preheader_votes: &Votes = &header.votes;
     let preheader: PreHeader = PreHeader { version: preheader_version, parent_id: preheader_parent_id.to_owned(), timestamp: preheader_timestamp, n_bits: preheader_nbits, height: preheader_height, miner_pk: preheader_miner_pk.to_owned(), votes: preheader_votes.to_owned() };
     return preheader;
-}
-
-pub fn convert_address_to_ergo_tree(address_str: &str) -> ErgoTree {
-    let address: Address = convert_address_str_to_address(address_str);
-    let ergo_tree: ErgoTree = address.script().unwrap();
-    return ergo_tree;
-}
-
-pub fn convert_address_str_to_address(address_str: &str) -> Address {
-    let address_encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Mainnet);
-    let address: Address = address_encoder.parse_address_from_str(address_str).unwrap();
-    return address;
 }

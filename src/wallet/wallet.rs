@@ -12,8 +12,8 @@ pub struct RustKitWallet {
 }
 
 impl RustKitWallet {
-    pub fn new(mnemonic: String, mnemonic_password: String) -> Self {
-        let seed = Mnemonic::to_seed(&mnemonic, &mnemonic_password);
+    pub fn new(mnemonic: &str, mnemonic_password: &str) -> Self {
+        let seed = Mnemonic::to_seed(mnemonic, mnemonic_password);
         let extended_secret_key: ExtSecretKey = ExtSecretKey::derive_master(seed).unwrap();
         let secret_key: SecretKey = SecretKey::dlog_from_bytes(&extended_secret_key.secret_key_bytes()).unwrap();
         let cloned_key: SecretKey = secret_key.clone();
