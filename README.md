@@ -1,6 +1,18 @@
 # Ergo RustKit
 
-### Example
+### Introduction
+
+A SDK for building applications on the Ergo blockchain. Our goal is to create a library that creates a simple and easy to use interface for developers to build applications. Currently, the library is in the early stages of development and is not recommended for production use. The full roadmap can be found below!
+
+### Setup
+
+The Ergo RustKit is published on [crates.io](https://crates.io/). The crate can be found [here](https://crates.io/crates/ergo-rustkit).
+
+```
+ergo-rustkit = "0.1.0"
+```
+
+### Examples
 
 ##### Simple Send
 
@@ -54,3 +66,10 @@ let resp: String = tx.submit().unwrap();
   - [ ] Set data-inputs
   - [ ] Set registers
 
+### Projects using Ergo RustKit
+
+Coming Soon...
+
+### Contributing
+
+Rust-Ergo is always open for contributions! If you would like to contribute, please open a PR and we will review it as soon as possible.
