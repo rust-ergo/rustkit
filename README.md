@@ -72,12 +72,12 @@ let resp: String = tx.submit().unwrap();
   - [X] Get boxes for Wallet
 - [ ] Transaction Utils
   - [X] Ergo Only Transactions
-  - [ ] Ergo + Assets Transactions
+  - [X] Ergo + Assets Transactions
     - [X] Send Assets
     - [X] Mint Assets
+  - [ ] Set Data Inputs
+  - [ ] Set Registers
   - [X] Multi-Recipient Transactions
-  - [ ] Set data-inputs
-  - [ ] Set registers
 
 ### Projects using Ergo RustKit
 
