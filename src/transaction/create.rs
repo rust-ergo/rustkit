@@ -40,7 +40,8 @@ pub struct RustKitTransaction {
 
 impl RustKitTransaction {
     pub fn new(receiver_address: &str, nano_erg_amount: u64, fee_amount: u64) -> Self {
-        let tx = RustKitTransaction {
+        
+        RustKitTransaction {
             reciever: receiver_address.to_owned(),
             alt_recievers: None,
             value: nano_erg_amount,
@@ -50,8 +51,7 @@ impl RustKitTransaction {
             data_boxes: None,
             unsigned: None,
             signed: None,
-        };
-        return tx;
+        }
     }
 
     pub fn build(&mut self, wallet: &RustKitWallet) {
@@ -61,7 +61,7 @@ impl RustKitTransaction {
             panic!("No input boxes found for address: {}", wallet.index_0_address);
         }
         let input_boxes_explorer: Vec<ErgoBox> = input_boxes_raw.unwrap();
-        self.input_boxes = Some(input_boxes_explorer.clone());
+        self.input_boxes = Some(input_boxes_explorer);
 
         let tx_input_boxes: BoxSelection<ErgoBox> = Self::get_input_boxes(self);
 
@@ -87,7 +87,7 @@ impl RustKitTransaction {
         let state_context: ErgoStateContext = ErgoStateContext::new(preheader, last_10_headers);
         let transaction_hints: TransactionHintsBag = wallet.wallet.generate_commitments(transaction_context.clone(), &state_context).unwrap();
         let signed_transaction: Transaction = wallet.wallet.sign_transaction(transaction_context, &state_context, Some(&transaction_hints)).unwrap();
-        self.signed = Some(signed_transaction.clone());
+        self.signed = Some(signed_transaction);
     }
 
     pub fn submit(&mut self) -> Result<String> {
@@ -104,7 +104,7 @@ impl RustKitTransaction {
           .send()?;
       
         let response_body: String = response.text()?;
-        return Ok(response_body);
+        Ok(response_body)
     }
 
     pub fn add_reciever(&mut self, receiver_address: &str, nano_erg_amount: u64, tokens_id: Option<&str>, tokens_amount: Option<u64>) {
@@ -163,8 +163,8 @@ impl RustKitTransaction {
             return selected_boxes;
         }
         let tokens: &Vec<Token> = self.send_tokens.as_ref().unwrap();
-        let selected_boxes: BoxSelection<ErgoBox> = box_selector.select(self.input_boxes.clone().unwrap(), nano_erg_amount, &tokens).unwrap();
-        return selected_boxes;
+        let selected_boxes: BoxSelection<ErgoBox> = box_selector.select(self.input_boxes.clone().unwrap(), nano_erg_amount, tokens).unwrap();
+        selected_boxes
     }
 
     fn create_output_candidates(&mut self) -> Vec<ErgoBoxCandidate> {
@@ -200,12 +200,12 @@ impl RustKitTransaction {
             }
         }
 
-        return output_candidates;
+        output_candidates
     }
 
     pub fn get_signed_transaction_as_json(&mut self) -> String {
         let transaction_json: String = serde_json::to_string(&self.signed).unwrap();
-        return transaction_json
+        transaction_json
     }
 
 }
@@ -219,5 +219,5 @@ fn create_preheader(header: &Header) -> PreHeader {
     let preheader_miner_pk: &Box<EcPoint> = &header.autolykos_solution.miner_pk;
     let preheader_votes: &Votes = &header.votes;
     let preheader: PreHeader = PreHeader { version: preheader_version, parent_id: preheader_parent_id.to_owned(), timestamp: preheader_timestamp, n_bits: preheader_nbits, height: preheader_height, miner_pk: preheader_miner_pk.to_owned(), votes: preheader_votes.to_owned() };
-    return preheader;
+    preheader
 }

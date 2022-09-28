@@ -21,14 +21,14 @@ impl RustKitWallet {
         secret_keys_vec.push(cloned_key);
         let wallet: Wallet = Wallet::from_secrets(secret_keys_vec);
         let index_0_address = "".to_owned();
-        return RustKitWallet { secret_key, index_0_address, wallet };
+        RustKitWallet { secret_key, index_0_address, wallet }
     }
 
     pub fn get_address(&self) -> Address {
         let master_key: &SecretKey = &self.secret_key.clone();
         let master_key: SecretKey = master_key.to_owned();
         let address: Address = master_key.get_address_from_public_image();
-        return address;
+        address
     }
 
     pub fn get_p2pk_address(&self) -> String {
@@ -36,7 +36,7 @@ impl RustKitWallet {
         let encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Mainnet);
         let p2pk_address: String = encoder.address_to_str(&address);
         let p2pk_address: String = remove_quotes(p2pk_address);
-        return p2pk_address;
+        p2pk_address
     }
 
     pub fn update_index_0_address(&mut self) {
@@ -46,6 +46,6 @@ impl RustKitWallet {
 
     pub fn get_input_boxes(&self) -> Option<Vec<ErgoBox>> {
         let bxs: Option<Vec<ErgoBox>> = get_unspent_boxes_for_address(self.index_0_address.as_str());
-        return bxs;
+        bxs
     }
 }

@@ -24,7 +24,7 @@ pub fn get_unspent_boxes_for_address(address: &str) -> Option<Vec<ErgoBox>> {
         let ergobox: ErgoBox = serde_json::from_value(b.clone()).unwrap();
         box_vec.push(ergobox);
     }
-    return Some(box_vec);
+    Some(box_vec)
 }
 
 fn request_current_height() -> Result<Value> {
@@ -37,5 +37,5 @@ fn request_current_height() -> Result<Value> {
 pub fn get_current_height() -> u64 {
     let json: Value = request_current_height().unwrap();
     let height: u64 = json["total"].as_u64().unwrap();
-    return height;
+    height
 }
