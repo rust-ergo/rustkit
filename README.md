@@ -20,9 +20,9 @@ ergo-rustkit = "0.1.2"
 let mut w: RustKitWallet = RustKitWallet::new("MNEMONIC", "MNEMONIC_PASSWORD");
 w.update_index_0_address();
 
-let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000);
-tx.build(&w);
-tx.sign(&w);
+let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000, w);
+tx.build();
+tx.sign();
 let resp: String = tx.submit().unwrap();
 ```
 
@@ -32,10 +32,23 @@ let resp: String = tx.submit().unwrap();
 let mut w: RustKitWallet = RustKitWallet::new("MNEMONIC", "MNEMONIC_PASSWORD");
 w.update_index_0_address();
 
-let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000);
+let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000, w);
 tx.add_token("TOKEN ID", 1000);
-tx.build(&w);
-tx.sign(&w);
+tx.build();
+tx.sign();
+let resp: String = tx.submit().unwrap();
+```
+
+##### Mint new token
+
+```rust
+let mut w: RustKitWallet = RustKitWallet::new("MNEMONIC", "MNEMONIC_PASSWORD");
+w.update_index_0_address();
+
+let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000, w);
+tx.mint_token("RustKit Mint", "Minted using Rustkit", 100, 2);
+tx.build();
+tx.sign();
 let resp: String = tx.submit().unwrap();
 ```
 
@@ -45,11 +58,11 @@ let resp: String = tx.submit().unwrap();
 let mut w: RustKitWallet = RustKitWallet::new("MNEMONIC", "MNEMONIC_PASSWORD");
 w.update_index_0_address();
 
-let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000);
+let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000, w);
 tx.add_token("TOKEN ID", 1000);
 tx.add_reciever("SECOND RECIPIENT ADDRESS", 100000000, Some("TOKEN ID"), Some(1000));
-tx.build(&w);
-tx.sign(&w);
+tx.build();
+tx.sign();
 let resp: String = tx.submit().unwrap();
 ```
 ### Roadmap
@@ -61,7 +74,7 @@ let resp: String = tx.submit().unwrap();
   - [X] Ergo Only Transactions
   - [ ] Ergo + Assets Transactions
     - [X] Send Assets
-    - [ ] Mint Assets
+    - [X] Mint Assets
   - [X] Multi-Recipient Transactions
   - [ ] Set data-inputs
   - [ ] Set registers
