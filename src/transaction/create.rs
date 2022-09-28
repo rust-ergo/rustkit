@@ -26,6 +26,25 @@ impl Reciver {
     }
 }
 
+struct Mint {
+    name: String,
+    description: String,
+    amount: u64,
+    decimals: usize,
+}
+
+impl Mint {
+
+    pub fn new(name: String, description: String, amount: u64, decimals: usize) -> Self {
+        Mint {
+            name,
+            description,
+            amount,
+            decimals,
+        }
+    }
+}
+
 /// RustKit implementation of transaction
 pub struct RustKitTransaction { 
     reciever: String,
@@ -33,64 +52,72 @@ pub struct RustKitTransaction {
     value: u64,
     fee: u64,
     send_tokens: Option<Vec<Token>>,
+    mint_tokens: Option<Mint>,
     input_boxes: Option<Vec<ErgoBox>>,
     data_boxes: Option<Vec<ErgoBox>>,
     unsigned: Option<UnsignedTransaction>,
     signed: Option<Transaction>,
+    wallet: RustKitWallet,
 }
 
 impl RustKitTransaction {
     /// Create a new transaction
-    pub fn new(receiver_address: &str, nano_erg_amount: u64, fee_amount: u64) -> Self {
-        
+    pub fn new(receiver_address: &str, nano_erg_amount: u64, fee_amount: u64, wallet: RustKitWallet) -> Self {
         RustKitTransaction {
             reciever: receiver_address.to_owned(),
             alt_recievers: None,
             value: nano_erg_amount,
             fee: fee_amount,
             send_tokens: None,
+            mint_tokens: None,
             input_boxes: None,
             data_boxes: None,
             unsigned: None,
             signed: None,
+            wallet: wallet,
         }
     }
 
     /// Build the transaction. Creates an unsigned transaction.
-    pub fn build(&mut self, wallet: &RustKitWallet) {
+    pub fn build(&mut self) {
         let height: u32 = get_current_height() as u32;
-        let input_boxes_raw: Option<Vec<ErgoBox>> = wallet.get_input_boxes();
+        let input_boxes_raw: Option<Vec<ErgoBox>> = self.wallet.get_input_boxes();
         if input_boxes_raw.is_none() {
-            panic!("No input boxes found for address: {}", wallet.index_0_address);
+            panic!("No input boxes found for address: {}", self.wallet.index_0_address);
         }
         let input_boxes_explorer: Vec<ErgoBox> = input_boxes_raw.unwrap();
         self.input_boxes = Some(input_boxes_explorer);
 
         let tx_input_boxes: BoxSelection<ErgoBox> = Self::get_input_boxes(self);
+        
+        let mut selected_boxes: Vec<ErgoBox> = Vec::new();
+        for b in tx_input_boxes.clone().boxes {
+            selected_boxes.push(b);
+        }
+        self.input_boxes = Some(selected_boxes);
 
         let tx_output_boxes: Vec<ErgoBoxCandidate> = Self::create_output_candidates(self);
 
         let fee_amount: BoxValue = BoxValue::new(self.fee).unwrap();
 
-        let change_address: Address = convert_address_str_to_address(wallet.index_0_address.as_str());
+        let change_address: Address = convert_address_str_to_address(self.wallet.index_0_address.as_str());
 
         let data_boxes: Vec<ErgoBox> = Vec::new();
         self.data_boxes = Some(data_boxes);
 
         let transaction_builder: TxBuilder<ErgoBox> = TxBuilder::new(tx_input_boxes, tx_output_boxes, height, fee_amount, change_address);
-        
         let unsigned: UnsignedTransaction = transaction_builder.build().unwrap();
         self.unsigned = Some(unsigned);
     }
 
     /// Signs the unsigned transaction
-    pub fn sign(&mut self, wallet: &RustKitWallet) {
+    pub fn sign(&mut self) {
         let last_10_headers: [Header; 10] = node::endpoints::get_last_10_headers();
         let preheader: PreHeader = create_preheader(&last_10_headers[0]);
         let transaction_context: TransactionContext<UnsignedTransaction> = TransactionContext::new(self.unsigned.clone().unwrap(), self.input_boxes.clone().unwrap(), self.data_boxes.clone().unwrap()).unwrap();
         let state_context: ErgoStateContext = ErgoStateContext::new(preheader, last_10_headers);
-        let transaction_hints: TransactionHintsBag = wallet.wallet.generate_commitments(transaction_context.clone(), &state_context).unwrap();
-        let signed_transaction: Transaction = wallet.wallet.sign_transaction(transaction_context, &state_context, Some(&transaction_hints)).unwrap();
+        let transaction_hints: TransactionHintsBag = self.wallet.wallet.generate_commitments(transaction_context.clone(), &state_context).unwrap();
+        let signed_transaction: Transaction = self.wallet.wallet.sign_transaction(transaction_context, &state_context, Some(&transaction_hints)).unwrap();
         self.signed = Some(signed_transaction);
     }
 
@@ -158,13 +185,18 @@ impl RustKitTransaction {
     }
 
     /// Mint a new token
-    pub fn mint_token(&mut self) {
-        // TODO
-        todo!();
+    pub fn mint_token(&mut self, name: &str, description: &str, amount: u64, decimals: usize) {
+        let mint: Mint = Mint::new(name.to_owned(), description.to_owned(), amount, decimals);
+        self.mint_tokens = Some(mint);
     }
 
     fn get_input_boxes(&mut self) -> BoxSelection<ErgoBox> {
-        let nano_erg_amount: BoxValue = BoxValue::try_from(self.value + self.fee).unwrap();
+        let mut nano_erg_amount: BoxValue = BoxValue::try_from(self.value + self.fee).unwrap();
+
+        if self.mint_tokens.is_some() {
+            nano_erg_amount = BoxValue::try_from(self.value + self.fee + BoxValue::SAFE_USER_MIN.as_u64()).unwrap();
+        }
+
         let box_selector: SimpleBoxSelector = SimpleBoxSelector::new();
         if self.send_tokens.is_none() {
             let selected_boxes: BoxSelection<ErgoBox> = box_selector.select(self.input_boxes.clone().unwrap(), nano_erg_amount, &[]).unwrap();
@@ -191,6 +223,21 @@ impl RustKitTransaction {
         }
         let first_box: ErgoBoxCandidate = first_box_builder.build().unwrap();
         output_candidates.push(first_box);
+
+        if self.mint_tokens.is_some() {
+            let mint = self.mint_tokens.as_ref().unwrap();
+            let mint_id = self.input_boxes.as_ref().unwrap()[0].box_id();
+            let mint_box_value: BoxValue = BoxValue::SAFE_USER_MIN;
+            let mint_box_address: ErgoTree = convert_address_to_ergo_tree(&self.reciever);
+            let mut mint_box_builder: ErgoBoxCandidateBuilder = ErgoBoxCandidateBuilder::new(mint_box_value, mint_box_address, height);
+            let mint_token = Token {
+                token_id: TokenId::from(mint_id),
+                amount: TokenAmount::try_from(mint.amount).unwrap(),
+            };
+            mint_box_builder.mint_token(mint_token, mint.name.clone(), mint.description.clone(), mint.decimals);
+            let mint_box: ErgoBoxCandidate = mint_box_builder.build().unwrap();
+            output_candidates.push(mint_box);
+        }
 
         if self.alt_recievers.is_some() {
             let alt_recievers = self.alt_recievers.as_ref().unwrap();
