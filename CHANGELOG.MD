@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.1.2 (Sep 28, 2022)
+
+- Refactors [(6d31cac)](https://github.com/rust-ergo/rustkit/commit/6d31cace6053733fe1c62ba33e363ae5c725dfee)
+- Create better documentation [(57c4f33)](https://github.com/rust-ergo/rustkit/commit/57c4f331ca35de340be13f39b2bbc15c78a32c15)
+
 ### 0.1.1 (Sep 28, 2022)
 
 - General refactos and improvements [(5173348)](https://github.com/rust-ergo/rustkit/commit/51733486d4daa0e44a95eb7ced908270052a9263)
