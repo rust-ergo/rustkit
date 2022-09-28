@@ -12,6 +12,7 @@ fn request_unspent_boxes_for_address(address: &str) -> Result<Value> {
     Ok(json)
 }
 
+/// Returns a list of unspent boxes for an address
 pub fn get_unspent_boxes_for_address(address: &str) -> Option<Vec<ErgoBox>> {
     let json: Value = request_unspent_boxes_for_address(address).unwrap();
     let total: u64 = json["total"].as_u64().unwrap();
@@ -34,6 +35,7 @@ fn request_current_height() -> Result<Value> {
     Ok(json)
 }
 
+/// Returns the current height of the blockchain
 pub fn get_current_height() -> u64 {
     let json: Value = request_current_height().unwrap();
     let height: u64 = json["total"].as_u64().unwrap();

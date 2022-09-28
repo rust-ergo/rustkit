@@ -7,6 +7,7 @@ use anyhow::{Result};
 
 const NODE_URL: &str = "http://13.56.77.38:9053";
 
+/// Get the last 10 block headers
 pub fn get_last_10_headers() -> Headers {
     let height: u32 = get_current_height() as u32;
     let mut headers_vec: Vec<Header> = Vec::new();

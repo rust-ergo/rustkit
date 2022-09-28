@@ -5,6 +5,7 @@ use crate::utils::format::remove_quotes;
 use crate::explorer::endpoints::get_unspent_boxes_for_address;
 
 
+/// RustKit wallet
 pub struct RustKitWallet {
     secret_key: SecretKey,
     pub index_0_address: String,
@@ -24,6 +25,7 @@ impl RustKitWallet {
         RustKitWallet { secret_key, index_0_address, wallet }
     }
 
+    /// Get sigma-rust address type from wallet
     pub fn get_address(&self) -> Address {
         let master_key: &SecretKey = &self.secret_key.clone();
         let master_key: SecretKey = master_key.to_owned();
@@ -31,6 +33,7 @@ impl RustKitWallet {
         address
     }
 
+    /// Get a p2pk address as a string from wallet
     pub fn get_p2pk_address(&self) -> String {
         let address: Address = self.get_address();
         let encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Mainnet);
@@ -39,11 +42,13 @@ impl RustKitWallet {
         p2pk_address
     }
 
+    /// Use to update wallet object with new address
     pub fn update_index_0_address(&mut self) {
         let p2pk_address: String = self.get_p2pk_address();
         self.index_0_address = p2pk_address;
     }
 
+    /// Get unspent boxes from explorer for wallet address
     pub fn get_input_boxes(&self) -> Option<Vec<ErgoBox>> {
         let bxs: Option<Vec<ErgoBox>> = get_unspent_boxes_for_address(self.index_0_address.as_str());
         bxs

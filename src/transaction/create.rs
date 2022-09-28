@@ -26,6 +26,7 @@ impl Reciver {
     }
 }
 
+/// RustKit implementation of transaction
 pub struct RustKitTransaction { 
     reciever: String,
     alt_recievers: Option<Vec<Reciver>>,
@@ -39,6 +40,7 @@ pub struct RustKitTransaction {
 }
 
 impl RustKitTransaction {
+    /// Create a new transaction
     pub fn new(receiver_address: &str, nano_erg_amount: u64, fee_amount: u64) -> Self {
         
         RustKitTransaction {
@@ -54,6 +56,7 @@ impl RustKitTransaction {
         }
     }
 
+    /// Build the transaction. Creates an unsigned transaction.
     pub fn build(&mut self, wallet: &RustKitWallet) {
         let height: u32 = get_current_height() as u32;
         let input_boxes_raw: Option<Vec<ErgoBox>> = wallet.get_input_boxes();
@@ -80,6 +83,7 @@ impl RustKitTransaction {
         self.unsigned = Some(unsigned);
     }
 
+    /// Signs the unsigned transaction
     pub fn sign(&mut self, wallet: &RustKitWallet) {
         let last_10_headers: [Header; 10] = node::endpoints::get_last_10_headers();
         let preheader: PreHeader = create_preheader(&last_10_headers[0]);
@@ -90,6 +94,7 @@ impl RustKitTransaction {
         self.signed = Some(signed_transaction);
     }
 
+    /// Submits the signed transaction to the network
     pub fn submit(&mut self) -> Result<String> {
         let transaction_json: String = self.get_signed_transaction_as_json();
         let url: String = format!("{}/api/v1/mempool/transactions/submit", MAINNET_EXPLORER_API_BASE_URL);
@@ -107,6 +112,7 @@ impl RustKitTransaction {
         Ok(response_body)
     }
 
+    /// Add a reciever for multiple recievers
     pub fn add_reciever(&mut self, receiver_address: &str, nano_erg_amount: u64, tokens_id: Option<&str>, tokens_amount: Option<u64>) {
         let mut tokens: Option<Vec<Token>> = None;
         if tokens_id.is_some() {
@@ -130,6 +136,7 @@ impl RustKitTransaction {
         }
     }
 
+    /// Add a token to send. Will be sent to first reciever
     pub fn add_token(&mut self, token_id: &str, amount: u64) {
         let id_base16: Vec<u8> = base16::decode(token_id).unwrap();
         let id_base64: String = base64::encode(&id_base16);
@@ -150,6 +157,7 @@ impl RustKitTransaction {
         }
     }
 
+    /// Mint a new token
     pub fn mint_token(&mut self) {
         // TODO
         todo!();
@@ -203,6 +211,7 @@ impl RustKitTransaction {
         output_candidates
     }
 
+    /// Returns the transaction as a json string
     pub fn get_signed_transaction_as_json(&mut self) -> String {
         let transaction_json: String = serde_json::to_string(&self.signed).unwrap();
         transaction_json
