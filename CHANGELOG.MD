@@ -5,6 +5,7 @@
 - Add abilitty to mint new tokens [(35710c7)](https://github.com/rust-ergo/rustkit/commit/35710c76ee2bcccfabd3c8e81458e3277cd56ad1)
 - Update README.md with new changes [(5e62bbd)](https://github.com/rust-ergo/rustkit/commit/5e62bbd48786c3dafd58a3dd689e49918f74cf48)
 - Set version to 0.2.0 [(0320830)](https://github.com/rust-ergo/rustkit/commit/0320830d60ec5f12181cce0eac69390a42c2575c)
+- Update README roadmap [(13b8616)](https://github.com/rust-ergo/rustkit/commit/13b86167240171c7b461c117881cd3c3870863d0)
 
 ### 0.1.2 (Sep 28, 2022)
 
