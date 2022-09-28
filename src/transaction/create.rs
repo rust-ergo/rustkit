@@ -31,7 +31,7 @@ pub struct RustKitTransaction {
     alt_recievers: Option<Vec<Reciver>>,
     value: u64,
     fee: u64,
-    tokens: Option<Vec<Token>>,
+    send_tokens: Option<Vec<Token>>,
     input_boxes: Option<Vec<ErgoBox>>,
     data_boxes: Option<Vec<ErgoBox>>,
     unsigned: Option<UnsignedTransaction>,
@@ -45,7 +45,7 @@ impl RustKitTransaction {
             alt_recievers: None,
             value: nano_erg_amount,
             fee: fee_amount,
-            tokens: None,
+            send_tokens: None,
             input_boxes: None,
             data_boxes: None,
             unsigned: None,
@@ -56,49 +56,26 @@ impl RustKitTransaction {
 
     pub fn build(&mut self, wallet: &RustKitWallet) {
         let height: u32 = get_current_height() as u32;
-        let input_boxes_explorer: Option<Vec<ErgoBox>> = wallet.get_input_boxes();
-        if input_boxes_explorer.is_none() {
+        let input_boxes_raw: Option<Vec<ErgoBox>> = wallet.get_input_boxes();
+        if input_boxes_raw.is_none() {
             panic!("No input boxes found for address: {}", wallet.index_0_address);
         }
-        let input_boxes_explorer: Vec<ErgoBox> = input_boxes_explorer.unwrap();
+        let input_boxes_explorer: Vec<ErgoBox> = input_boxes_raw.unwrap();
         self.input_boxes = Some(input_boxes_explorer.clone());
-        let mut input_boxes_raw_value: u64 = 0; 
-        let mut input_boxes_raw_tokens: Vec<Token> = Vec::new();
-        for box_ in input_boxes_explorer.clone().iter() {
-            input_boxes_raw_value += box_.value.as_u64();
-            let box_tokens = box_.tokens.clone();
-            if box_tokens.is_some() {
-                let box_tokens = box_tokens.unwrap();
-                for token in box_tokens.iter() {
-                    input_boxes_raw_tokens.push(token.clone());
-                }
-            }
-        }
+
+        let tx_input_boxes: BoxSelection<ErgoBox> = Self::get_input_boxes(self);
 
         let tx_output_boxes: Vec<ErgoBoxCandidate> = Self::create_output_candidates(self);
-        let mut total_output_value: u64 = 0;
-        let mut needed_tokens: Vec<Token> = Vec::new();
-        for opt in &tx_output_boxes {
-            total_output_value += opt.value.as_u64().to_owned();
-            if opt.tokens.is_some() {
-                let tokens = opt.tokens.clone().unwrap();
-                for token in tokens.iter() {
-                    needed_tokens.push(token.clone());
-                }
-            }
-        }
-
-        let box_value_needed: BoxValue = BoxValue::try_from(total_output_value + self.fee).unwrap();
-        let tx_input_boxes: BoxSelection<ErgoBox> = Self::get_input_boxes(self.input_boxes.clone().unwrap(), box_value_needed, &Some(needed_tokens));
-
-        let data_boxes: Vec<ErgoBox> = Vec::new();
-        self.data_boxes = Some(data_boxes);
 
         let fee_amount: BoxValue = BoxValue::new(self.fee).unwrap();
 
         let change_address: Address = convert_address_str_to_address(wallet.index_0_address.as_str());
 
+        let data_boxes: Vec<ErgoBox> = Vec::new();
+        self.data_boxes = Some(data_boxes);
+
         let transaction_builder: TxBuilder<ErgoBox> = TxBuilder::new(tx_input_boxes, tx_output_boxes, height, fee_amount, change_address);
+        
         let unsigned: UnsignedTransaction = transaction_builder.build().unwrap();
         self.unsigned = Some(unsigned);
     }
@@ -160,16 +137,16 @@ impl RustKitTransaction {
             token_id: TokenId::from_base64(&id_base64).unwrap(),
             amount: TokenAmount::try_from(amount as u64).unwrap(),
         };
-        let token_vec: &Option<Vec<Token>> = &self.tokens;
+        let token_vec: &Option<Vec<Token>> = &self.send_tokens;
         let token_vec: Option<Vec<Token>> = token_vec.to_owned();
         if token_vec.is_none() {
             let mut tokens: Vec<Token> = Vec::new();
             tokens.push(tk);
-            self.tokens = Some(tokens);
+            self.send_tokens = Some(tokens);
         } else {
             let mut tokens: Vec<Token> = token_vec.unwrap();
             tokens.push(tk);
-            self.tokens = Some(tokens);
+            self.send_tokens = Some(tokens);
         }
     }
 
@@ -178,14 +155,15 @@ impl RustKitTransaction {
         todo!();
     }
 
-    fn get_input_boxes(input_boxes: Vec<ErgoBox>, nano_erg_amount: BoxValue, tokens: &Option<Vec<Token>>) -> BoxSelection<ErgoBox> {
+    fn get_input_boxes(&mut self) -> BoxSelection<ErgoBox> {
+        let nano_erg_amount: BoxValue = BoxValue::try_from(self.value + self.fee).unwrap();
         let box_selector: SimpleBoxSelector = SimpleBoxSelector::new();
-        if tokens.is_none() {
-            let selected_boxes: BoxSelection<ErgoBox> = box_selector.select(input_boxes, nano_erg_amount, &[]).unwrap();
+        if self.send_tokens.is_none() {
+            let selected_boxes: BoxSelection<ErgoBox> = box_selector.select(self.input_boxes.clone().unwrap(), nano_erg_amount, &[]).unwrap();
             return selected_boxes;
         }
-        let tokens: &Vec<Token> = tokens.as_ref().unwrap();
-        let selected_boxes: BoxSelection<ErgoBox> = box_selector.select(input_boxes, nano_erg_amount, &tokens).unwrap();
+        let tokens: &Vec<Token> = self.send_tokens.as_ref().unwrap();
+        let selected_boxes: BoxSelection<ErgoBox> = box_selector.select(self.input_boxes.clone().unwrap(), nano_erg_amount, &tokens).unwrap();
         return selected_boxes;
     }
 
@@ -197,8 +175,8 @@ impl RustKitTransaction {
         let first_box_value: BoxValue = BoxValue::new(self.value).unwrap();
         let first_box_address: ErgoTree = convert_address_to_ergo_tree(&self.reciever);
         let mut first_box_builder: ErgoBoxCandidateBuilder = ErgoBoxCandidateBuilder::new(first_box_value, first_box_address, height);
-        if self.tokens.is_some() {
-            let tokens: &Vec<Token> = self.tokens.as_ref().unwrap();
+        if self.send_tokens.is_some() {
+            let tokens: &Vec<Token> = self.send_tokens.as_ref().unwrap();
             for t in tokens {
                 first_box_builder.add_token(t.clone());
             }
