@@ -9,7 +9,7 @@ A SDK for building applications on the Ergo blockchain. Our goal is to create a 
 The Ergo RustKit is published on [crates.io](https://crates.io/). The crate can be found [here](https://crates.io/crates/ergo-rustkit).
 
 ```
-ergo-rustkit = "0.2.1"
+ergo-rustkit = "0.3.1"
 ```
 
 ### Tutorials
