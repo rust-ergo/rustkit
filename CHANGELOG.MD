@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.3.0 (Sep 29, 2022)
+
+- Use ergo-rustkit-endpoints for http requests [(3d3449c)](https://github.com/rust-ergo/rustkit/commit/3d3449c8561deabdf206f4410e66ac126e1d9a6b)
+- Set version to 0.3.0 [(a28ae40)](https://github.com/rust-ergo/rustkit/commit/a28ae40315ab1432bf02e852abfb9d6ba060622b)
+
 ### 0.2.1 (Sep 29, 2022)
 
 - Remove tutorials from README and link to tutorials repo [(2c0edf5)](https://github.com/rust-ergo/rustkit/commit/2c0edf508d81258c742626c102d7d5189f144563)
