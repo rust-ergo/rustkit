@@ -9,62 +9,15 @@ A SDK for building applications on the Ergo blockchain. Our goal is to create a 
 The Ergo RustKit is published on [crates.io](https://crates.io/). The crate can be found [here](https://crates.io/crates/ergo-rustkit).
 
 ```
-ergo-rustkit = "0.2.0"
+ergo-rustkit = "0.2.1"
 ```
 
-### Examples
+### Tutorials
 
-##### Simple Send
+A seperate repo for tutorials can be found [here](https://github.com/rust-ergo/rustkit-tutorials).
 
-```rust
-let mut w: RustKitWallet = RustKitWallet::new("MNEMONIC", "MNEMONIC_PASSWORD");
-w.update_index_0_address();
+Tutorials will be updated as the library is updated.
 
-let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000, w);
-tx.build();
-tx.sign();
-let resp: String = tx.submit().unwrap();
-```
-
-##### Send with token
-
-```rust
-let mut w: RustKitWallet = RustKitWallet::new("MNEMONIC", "MNEMONIC_PASSWORD");
-w.update_index_0_address();
-
-let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000, w);
-tx.add_token("TOKEN ID", 1000);
-tx.build();
-tx.sign();
-let resp: String = tx.submit().unwrap();
-```
-
-##### Mint new token
-
-```rust
-let mut w: RustKitWallet = RustKitWallet::new("MNEMONIC", "MNEMONIC_PASSWORD");
-w.update_index_0_address();
-
-let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000, w);
-tx.mint_token("RustKit Mint", "Minted using Rustkit", 100, 2);
-tx.build();
-tx.sign();
-let resp: String = tx.submit().unwrap();
-```
-
-##### Multi-Recipient Send
-
-```rust
-let mut w: RustKitWallet = RustKitWallet::new("MNEMONIC", "MNEMONIC_PASSWORD");
-w.update_index_0_address();
-
-let mut tx: RustKitTransaction = RustKitTransaction::new("RECIPIENT ADDRESS", 100000000, 1100000, w);
-tx.add_token("TOKEN ID", 1000);
-tx.add_reciever("SECOND RECIPIENT ADDRESS", 100000000, Some("TOKEN ID"), Some(1000));
-tx.build();
-tx.sign();
-let resp: String = tx.submit().unwrap();
-```
 ### Roadmap
 
 - [X] Wallet Utils
@@ -81,7 +34,7 @@ let resp: String = tx.submit().unwrap();
 
 ### Projects using Ergo RustKit
 
-Coming Soon...
+- [Ergo-RustKit Tutorials](https://github.com/rust-ergo/rustkit-tutorials)
 
 ### Contributing
 
