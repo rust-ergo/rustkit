@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.2.1 (Sep 29, 2022)
+
+- Remove tutorials from README and link to tutorials repo [(2c0edf5)](https://github.com/rust-ergo/rustkit/commit/2c0edf508d81258c742626c102d7d5189f144563)
+
 ### 0.2.0 (Sep 28, 2022)
 
 - Add abilitty to mint new tokens [(35710c7)](https://github.com/rust-ergo/rustkit/commit/35710c76ee2bcccfabd3c8e81458e3277cd56ad1)
