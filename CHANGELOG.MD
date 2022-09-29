@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.3.1 (Sep 29, 2022)
+
+- Update wallet index_0_address on creation [(f3323c6)](https://github.com/rust-ergo/rustkit/commit/f3323c68caa8b2b4df89158f1977650e40ae3808)
+- Set version to 0.3.1 [(5021fa8)](https://github.com/rust-ergo/rustkit/commit/5021fa8d07db3a1be4e6dc0ccafd3488bd2af89e)
+
 ### 0.3.0 (Sep 29, 2022)
 
 - Use ergo-rustkit-endpoints for http requests [(3d3449c)](https://github.com/rust-ergo/rustkit/commit/3d3449c8561deabdf206f4410e66ac126e1d9a6b)
