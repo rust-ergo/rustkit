@@ -2,7 +2,6 @@ use ergo_lib::wallet::{Wallet, secret_key::SecretKey, ext_secret_key::ExtSecretK
 use ergotree_ir::{chain::{address::{Address, AddressEncoder, NetworkPrefix}, ergo_box::ErgoBox}};
 
 use crate::utils::format::remove_quotes;
-use crate::explorer::endpoints::get_unspent_boxes_for_address;
 
 
 /// RustKit wallet
@@ -50,7 +49,7 @@ impl RustKitWallet {
 
     /// Get unspent boxes from explorer for wallet address
     pub fn get_input_boxes(&self) -> Option<Vec<ErgoBox>> {
-        let bxs: Option<Vec<ErgoBox>> = get_unspent_boxes_for_address(self.index_0_address.as_str());
+        let bxs: Option<Vec<ErgoBox>> = ergo_rustkit_endpoints::get_unspent_boxes_for_address(self.index_0_address.as_str());
         bxs
     }
 }

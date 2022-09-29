@@ -3,11 +3,9 @@ use ergo_chain_types::{Header, PreHeader, BlockId, EcPoint, Votes};
 use ergo_lib::{ergotree_ir::chain::ergo_box::ErgoBox, wallet::{box_selector::{SimpleBoxSelector, BoxSelection, BoxSelector}, tx_builder::TxBuilder, signing::TransactionContext, multi_sig::TransactionHintsBag}, chain::{ergo_box::box_builder::ErgoBoxCandidateBuilder, transaction::{unsigned::UnsignedTransaction, Transaction}, ergo_state_context::ErgoStateContext}};
 use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate}, token::{Token, TokenAmount, TokenId}, address::{Address}}, ergo_tree::ErgoTree};
 
-use explorer::endpoints::get_current_height;
-use reqwest::blocking::{Client, Response};
 use wallet::wallet::RustKitWallet;
 
-use crate::{explorer, node, utils::consts::MAINNET_EXPLORER_API_BASE_URL, address::create::{convert_address_str_to_address, convert_address_to_ergo_tree}};
+use crate::{address::create::{convert_address_str_to_address, convert_address_to_ergo_tree}};
 use crate::wallet;
 
 struct Reciver {
@@ -80,7 +78,7 @@ impl RustKitTransaction {
 
     /// Build the transaction. Creates an unsigned transaction.
     pub fn build(&mut self) {
-        let height: u32 = get_current_height() as u32;
+        let height: u32 = ergo_rustkit_endpoints::get_current_height() as u32;
         let input_boxes_raw: Option<Vec<ErgoBox>> = self.wallet.get_input_boxes();
         if input_boxes_raw.is_none() {
             panic!("No input boxes found for address: {}", self.wallet.index_0_address);
@@ -112,7 +110,7 @@ impl RustKitTransaction {
 
     /// Signs the unsigned transaction
     pub fn sign(&mut self) {
-        let last_10_headers: [Header; 10] = node::endpoints::get_last_10_headers();
+        let last_10_headers: [Header; 10] = ergo_rustkit_endpoints::get_last_10_headers();
         let preheader: PreHeader = create_preheader(&last_10_headers[0]);
         let transaction_context: TransactionContext<UnsignedTransaction> = TransactionContext::new(self.unsigned.clone().unwrap(), self.input_boxes.clone().unwrap(), self.data_boxes.clone().unwrap()).unwrap();
         let state_context: ErgoStateContext = ErgoStateContext::new(preheader, last_10_headers);
@@ -124,19 +122,8 @@ impl RustKitTransaction {
     /// Submits the signed transaction to the network
     pub fn submit(&mut self) -> Result<String> {
         let transaction_json: String = self.get_signed_transaction_as_json();
-        let url: String = format!("{}/api/v1/mempool/transactions/submit", MAINNET_EXPLORER_API_BASE_URL);
-        let client: Client = reqwest::blocking::Client::new();
-        let response: Response = client.post(url)
-          .header("Content-Type", "application/json")
-          .header("Accept", "application/json")
-          .header("mode", "cors")
-          .header("Access-Control-Allow-Origin", "*")
-          .header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-          .body(transaction_json)
-          .send()?;
-      
-        let response_body: String = response.text()?;
-        Ok(response_body)
+        let resp: Result<String> = ergo_rustkit_endpoints::submit(transaction_json);
+        resp
     }
 
     /// Add a reciever for multiple recievers
@@ -208,7 +195,7 @@ impl RustKitTransaction {
     }
 
     fn create_output_candidates(&mut self) -> Vec<ErgoBoxCandidate> {
-        let height: u32 = get_current_height() as u32;
+        let height: u32 = ergo_rustkit_endpoints::get_current_height() as u32;
 
         let mut output_candidates: Vec<ErgoBoxCandidate> = Vec::new();
 

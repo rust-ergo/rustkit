@@ -474,10 +474,24 @@ dependencies = [
  "base64",
  "ergo-chain-types",
  "ergo-lib",
+ "ergo-rustkit-endpoints",
  "ergotree-ir",
  "hex",
  "reqwest",
  "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ergo-rustkit-endpoints"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3503b14f41b972b11ed13af15dd77112f90b78ee1d8791d73ae8556f6eb5e1aa"
+dependencies = [
+ "anyhow",
+ "ergo-chain-types",
+ "ergo-lib",
+ "reqwest",
  "serde_json",
 ]
 
