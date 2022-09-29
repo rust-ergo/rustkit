@@ -20,7 +20,10 @@ impl RustKitWallet {
         let mut secret_keys_vec: Vec<SecretKey> = Vec::new();
         secret_keys_vec.push(cloned_key);
         let wallet: Wallet = Wallet::from_secrets(secret_keys_vec);
-        let index_0_address = "".to_owned();
+        let addr: Address = secret_key.get_address_from_public_image();
+        let address_encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Mainnet);
+        let index_0_address: String = address_encoder.address_to_str(&addr);
+        let index_0_address: String = remove_quotes(index_0_address);
         RustKitWallet { secret_key, index_0_address, wallet }
     }
 
@@ -34,17 +37,7 @@ impl RustKitWallet {
 
     /// Get a p2pk address as a string from wallet
     pub fn get_p2pk_address(&self) -> String {
-        let address: Address = self.get_address();
-        let encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Mainnet);
-        let p2pk_address: String = encoder.address_to_str(&address);
-        let p2pk_address: String = remove_quotes(p2pk_address);
-        p2pk_address
-    }
-
-    /// Use to update wallet object with new address
-    pub fn update_index_0_address(&mut self) {
-        let p2pk_address: String = self.get_p2pk_address();
-        self.index_0_address = p2pk_address;
+        return self.index_0_address.clone();
     }
 
     /// Get unspent boxes from explorer for wallet address
