@@ -5,7 +5,7 @@ use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate}, tok
 
 use wallet::wallet::RustKitWallet;
 
-use crate::{address::create::{convert_address_str_to_address, convert_address_to_ergo_tree}};
+use crate::{address::create::{convert_address_str_to_address, convert_address_to_ergo_tree}, utils::consts::SUGGESTED_TX_FEE};
 use crate::wallet;
 
 struct Reciver {
@@ -60,12 +60,12 @@ pub struct RustKitTransaction {
 
 impl RustKitTransaction {
     /// Create a new transaction
-    pub fn new(receiver_address: &str, nano_erg_amount: u64, fee_amount: u64, wallet: RustKitWallet) -> Self {
+    pub fn new(receiver_address: &str, amount_to_send: u64, wallet: RustKitWallet) -> Self {
         RustKitTransaction {
             reciever: receiver_address.to_owned(),
             alt_recievers: None,
-            value: nano_erg_amount,
-            fee: fee_amount,
+            value: amount_to_send,
+            fee: SUGGESTED_TX_FEE,
             send_tokens: None,
             mint_tokens: None,
             input_boxes: None,
@@ -175,6 +175,11 @@ impl RustKitTransaction {
     pub fn mint_token(&mut self, name: &str, description: &str, amount: u64, decimals: usize) {
         let mint: Mint = Mint::new(name.to_owned(), description.to_owned(), amount, decimals);
         self.mint_tokens = Some(mint);
+    }
+
+    /// Set the fee for the transaction
+    pub fn set_fee(&mut self, fee: u64) {
+        self.fee = fee;
     }
 
     fn get_input_boxes(&mut self) -> BoxSelection<ErgoBox> {
