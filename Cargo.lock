@@ -484,9 +484,9 @@ dependencies = [
 
 [[package]]
 name = "ergo-rustkit-endpoints"
-version = "0.1.0"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3503b14f41b972b11ed13af15dd77112f90b78ee1d8791d73ae8556f6eb5e1aa"
+checksum = "b86dadd63e6bae8b74f6b91ac8257a18e2ae3c31d66c870def429e2790dbf259"
 dependencies = [
  "anyhow",
  "ergo-chain-types",
