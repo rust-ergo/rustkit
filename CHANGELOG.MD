@@ -1,5 +1,11 @@
 # Changelog
 
+### 0.3.2 (Oct 2, 2022)
+
+- Adjust fee with seperate function [(6ea5de8)](https://github.com/rust-ergo/rustkit/commit/6ea5de8b0a05c47db0cf9ad6e4a47d2bb664235e)
+- Bump rustkit-endpoints to 0.1.2 [(d10a83b)](https://github.com/rust-ergo/rustkit/commit/d10a83b14b981e6d9239f8c4d3356afcdfeb5dde)
+- Set version to 0.3.2 [(3671bb9)](https://github.com/rust-ergo/rustkit/commit/3671bb91cbd34f92273177ab7438595cfe09deb4)
+
 ### 0.3.1 (Sep 29, 2022)
 
 - Update wallet index_0_address on creation [(f3323c6)](https://github.com/rust-ergo/rustkit/commit/f3323c68caa8b2b4df89158f1977650e40ae3808)
