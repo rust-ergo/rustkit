@@ -61,7 +61,8 @@ pub struct RustKitTransaction {
 
 impl RustKitTransaction {
     /// Create a new transaction
-    pub fn new(receiver_address: &str, amount_to_send: u64, wallet: RustKitWallet, config: Config) -> Self {
+    pub fn new(receiver_address: &str, amount_to_send: u64, wallet: RustKitWallet) -> Self {
+        let config: Config = wallet.get_config();
         RustKitTransaction {
             reciever: receiver_address.to_owned(),
             alt_recievers: None,

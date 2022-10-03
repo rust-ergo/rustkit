@@ -59,4 +59,8 @@ impl RustKitWallet {
         let bxs: Option<Vec<ErgoBox>> = ergo_rustkit_endpoints::get_unspent_boxes_for_address(self.index_0_address.as_str(), self.config.clone().explorer_url);
         bxs
     }
+
+    pub fn get_config(&self) -> Config {
+        self.config.clone()
+    }
 }
