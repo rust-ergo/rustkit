@@ -5,7 +5,7 @@ use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate}, tok
 
 use wallet::wallet::RustKitWallet;
 
-use crate::{address::create::{convert_address_str_to_address, convert_address_to_ergo_tree}, utils::consts::SUGGESTED_TX_FEE};
+use crate::{address::create::{convert_address_str_to_address, convert_address_to_ergo_tree}, utils::consts::SUGGESTED_TX_FEE, config::file::Config};
 use crate::wallet;
 
 struct Reciver {
@@ -56,11 +56,12 @@ pub struct RustKitTransaction {
     unsigned: Option<UnsignedTransaction>,
     signed: Option<Transaction>,
     wallet: RustKitWallet,
+    config: Config,
 }
 
 impl RustKitTransaction {
     /// Create a new transaction
-    pub fn new(receiver_address: &str, amount_to_send: u64, wallet: RustKitWallet) -> Self {
+    pub fn new(receiver_address: &str, amount_to_send: u64, wallet: RustKitWallet, config: Config) -> Self {
         RustKitTransaction {
             reciever: receiver_address.to_owned(),
             alt_recievers: None,
@@ -73,12 +74,13 @@ impl RustKitTransaction {
             unsigned: None,
             signed: None,
             wallet: wallet,
+            config: config,
         }
     }
 
     /// Build the transaction. Creates an unsigned transaction.
     pub fn build(&mut self) {
-        let height: u32 = ergo_rustkit_endpoints::get_current_height() as u32;
+        let height: u32 = ergo_rustkit_endpoints::get_current_height(self.config.explorer_url.clone()) as u32;
         let input_boxes_raw: Option<Vec<ErgoBox>> = self.wallet.get_input_boxes();
         if input_boxes_raw.is_none() {
             panic!("No input boxes found for address: {}", self.wallet.index_0_address);
@@ -110,7 +112,7 @@ impl RustKitTransaction {
 
     /// Signs the unsigned transaction
     pub fn sign(&mut self) {
-        let last_10_headers: [Header; 10] = ergo_rustkit_endpoints::get_last_10_headers();
+        let last_10_headers: [Header; 10] = ergo_rustkit_endpoints::get_last_10_headers(self.config.explorer_url.clone(), self.config.node_url.clone());
         let preheader: PreHeader = create_preheader(&last_10_headers[0]);
         let transaction_context: TransactionContext<UnsignedTransaction> = TransactionContext::new(self.unsigned.clone().unwrap(), self.input_boxes.clone().unwrap(), self.data_boxes.clone().unwrap()).unwrap();
         let state_context: ErgoStateContext = ErgoStateContext::new(preheader, last_10_headers);
@@ -122,7 +124,7 @@ impl RustKitTransaction {
     /// Submits the signed transaction to the network
     pub fn submit(&mut self) -> Result<String> {
         let transaction_json: String = self.get_signed_transaction_as_json();
-        let resp: Result<String> = ergo_rustkit_endpoints::submit(transaction_json);
+        let resp: Result<String> = ergo_rustkit_endpoints::submit(transaction_json, self.config.node_url.clone());
         resp
     }
 
@@ -200,7 +202,7 @@ impl RustKitTransaction {
     }
 
     fn create_output_candidates(&mut self) -> Vec<ErgoBoxCandidate> {
-        let height: u32 = ergo_rustkit_endpoints::get_current_height() as u32;
+        let height: u32 = ergo_rustkit_endpoints::get_current_height(self.config.explorer_url.clone()) as u32;
 
         let mut output_candidates: Vec<ErgoBoxCandidate> = Vec::new();
 
