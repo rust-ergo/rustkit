@@ -81,7 +81,7 @@ impl RustKitTransaction {
 
     /// Build the transaction. Creates an unsigned transaction.
     pub fn build(&mut self) {
-        let height: u32 = ergo_rustkit_endpoints::get_current_height(self.config.explorer_url.clone()) as u32;
+        let height: u32 = ergo_rustkit_endpoints::get_current_height(&self.config.explorer_url) as u32;
         let input_boxes_raw: Option<Vec<ErgoBox>> = self.wallet.get_input_boxes();
         if input_boxes_raw.is_none() {
             panic!("No input boxes found for address: {}", self.wallet.index_0_address);
@@ -113,7 +113,7 @@ impl RustKitTransaction {
 
     /// Signs the unsigned transaction
     pub fn sign(&mut self) {
-        let last_10_headers: [Header; 10] = ergo_rustkit_endpoints::get_last_10_headers(self.config.explorer_url.clone(), self.config.node_url.clone());
+        let last_10_headers: [Header; 10] = ergo_rustkit_endpoints::get_last_10_headers(&self.config.explorer_url, &self.config.node_url);
         let preheader: PreHeader = create_preheader(&last_10_headers[0]);
         let transaction_context: TransactionContext<UnsignedTransaction> = TransactionContext::new(self.unsigned.clone().unwrap(), self.input_boxes.clone().unwrap(), self.data_boxes.clone().unwrap()).unwrap();
         let state_context: ErgoStateContext = ErgoStateContext::new(preheader, last_10_headers);
@@ -125,7 +125,7 @@ impl RustKitTransaction {
     /// Submits the signed transaction to the network
     pub fn submit(&mut self) -> Result<String> {
         let transaction_json: String = self.get_signed_transaction_as_json();
-        let resp: Result<String> = ergo_rustkit_endpoints::submit(transaction_json, self.config.node_url.clone());
+        let resp: Result<String> = ergo_rustkit_endpoints::submit(transaction_json, &self.config.node_url);
         resp
     }
 
@@ -203,7 +203,7 @@ impl RustKitTransaction {
     }
 
     fn create_output_candidates(&mut self) -> Vec<ErgoBoxCandidate> {
-        let height: u32 = ergo_rustkit_endpoints::get_current_height(self.config.explorer_url.clone()) as u32;
+        let height: u32 = ergo_rustkit_endpoints::get_current_height(&self.config.explorer_url) as u32;
 
         let mut output_candidates: Vec<ErgoBoxCandidate> = Vec::new();
 

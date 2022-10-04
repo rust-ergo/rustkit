@@ -56,7 +56,7 @@ impl RustKitWallet {
 
     /// Get unspent boxes from explorer for wallet address
     pub fn get_input_boxes(&self) -> Option<Vec<ErgoBox>> {
-        let bxs: Option<Vec<ErgoBox>> = ergo_rustkit_endpoints::get_unspent_boxes_for_address(self.index_0_address.as_str(), self.config.clone().explorer_url);
+        let bxs: Option<Vec<ErgoBox>> = ergo_rustkit_endpoints::get_unspent_boxes_for_address(self.index_0_address.as_str(), &self.config.clone().explorer_url);
         bxs
     }
 
