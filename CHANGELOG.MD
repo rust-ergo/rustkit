@@ -1,5 +1,12 @@
 # Changelog
 
+### 0.4.0 (Oct 3, 2022)
+
+- Use config file to set important value [(c0969ad)](https://github.com/rust-ergo/rustkit/commit/c0969addc5dd036caad2fdd04be9ee76e7caddf3)
+- Remove need to pass config into transaction [(9196e81)](https://github.com/rust-ergo/rustkit/commit/9196e81f21d5ff712d898d8bff7b9f95ab2972f9)
+- Bump ergo-rustkit-endpoints to 0.1.4 [(bd90d05)](https://github.com/rust-ergo/rustkit/commit/bd90d0556fde872f9e113c06f7d6c076e36db317)
+- Set veriion to 0.4.0, update readme roadmap [(1f99380)](https://github.com/rust-ergo/rustkit/commit/1f99380bba402e67c63e332457a1fe624851ae18)
+
 ### 0.3.2 (Oct 2, 2022)
 
 - Adjust fee with seperate function [(6ea5de8)](https://github.com/rust-ergo/rustkit/commit/6ea5de8b0a05c47db0cf9ad6e4a47d2bb664235e)
