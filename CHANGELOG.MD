@@ -1,5 +1,10 @@
 # Changelog
 
+### 0.4.1 (Oct 8, 2022)
+
+- Refactors [(935828d)](https://github.com/rust-ergo/rustkit/commit/935828db27400260782ca058ca230c5df533224e)
+- Set version 0.4.1 [(b237a39)](https://github.com/rust-ergo/rustkit/commit/b237a39dd1e653fff6842170aa5384808e400fc6)
+
 ### 0.4.0 (Oct 3, 2022)
 
 - Use config file to set important value [(c0969ad)](https://github.com/rust-ergo/rustkit/commit/c0969addc5dd036caad2fdd04be9ee76e7caddf3)
