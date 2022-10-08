@@ -114,7 +114,7 @@ impl RustKitTransaction {
     /// Signs the unsigned transaction
     pub fn sign(&mut self) {
         let last_10_headers: [Header; 10] = ergo_rustkit_endpoints::get_last_10_headers(&self.config.explorer_url, &self.config.node_url);
-        let preheader: PreHeader = create_preheader(&last_10_headers[0]);
+        let preheader: PreHeader = Self::create_preheader(&last_10_headers[0]);
         let transaction_context: TransactionContext<UnsignedTransaction> = TransactionContext::new(self.unsigned.clone().unwrap(), self.input_boxes.clone().unwrap(), self.data_boxes.clone().unwrap()).unwrap();
         let state_context: ErgoStateContext = ErgoStateContext::new(preheader, last_10_headers);
         let transaction_hints: TransactionHintsBag = self.wallet.wallet.generate_commitments(transaction_context.clone(), &state_context).unwrap();
@@ -124,9 +124,17 @@ impl RustKitTransaction {
 
     /// Submits the signed transaction to the network
     pub fn submit(&mut self) -> Result<String> {
-        let transaction_json: String = self.get_signed_transaction_as_json();
+        let transaction_json: String = self.to_json();
         let resp: Result<String> = ergo_rustkit_endpoints::submit(transaction_json, &self.config.node_url);
         resp
+    }
+
+    /// Signs and submits the transaction with one function call
+    pub fn sign_and_submit(&mut self) -> Result<String> {
+        self.sign();
+        let transaction_json: String = self.to_json();
+        let resp: Result<String> = ergo_rustkit_endpoints::submit(transaction_json, &self.config.node_url);
+        return resp;
     }
 
     /// Add a reciever for multiple recievers
@@ -254,21 +262,21 @@ impl RustKitTransaction {
     }
 
     /// Returns the transaction as a json string
-    pub fn get_signed_transaction_as_json(&mut self) -> String {
+    pub fn to_json(&mut self) -> String {
         let transaction_json: String = serde_json::to_string(&self.signed).unwrap();
         transaction_json
     }
 
-}
+    fn create_preheader(header: &Header) -> PreHeader {
+        let preheader_version: u8 = header.version;
+        let preheader_height: u32 = header.height;
+        let preheader_timestamp: u64 = header.timestamp;
+        let preheader_parent_id: &BlockId = &header.parent_id;
+        let preheader_nbits: u64 = header.n_bits;
+        let preheader_miner_pk: &Box<EcPoint> = &header.autolykos_solution.miner_pk;
+        let preheader_votes: &Votes = &header.votes;
+        let preheader: PreHeader = PreHeader { version: preheader_version, parent_id: preheader_parent_id.to_owned(), timestamp: preheader_timestamp, n_bits: preheader_nbits, height: preheader_height, miner_pk: preheader_miner_pk.to_owned(), votes: preheader_votes.to_owned() };
+        preheader
+    }
 
-fn create_preheader(header: &Header) -> PreHeader {
-    let preheader_version: u8 = header.version;
-    let preheader_height: u32 = header.height;
-    let preheader_timestamp: u64 = header.timestamp;
-    let preheader_parent_id: &BlockId = &header.parent_id;
-    let preheader_nbits: u64 = header.n_bits;
-    let preheader_miner_pk: &Box<EcPoint> = &header.autolykos_solution.miner_pk;
-    let preheader_votes: &Votes = &header.votes;
-    let preheader: PreHeader = PreHeader { version: preheader_version, parent_id: preheader_parent_id.to_owned(), timestamp: preheader_timestamp, n_bits: preheader_nbits, height: preheader_height, miner_pk: preheader_miner_pk.to_owned(), votes: preheader_votes.to_owned() };
-    preheader
 }
