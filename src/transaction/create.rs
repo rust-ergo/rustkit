@@ -46,6 +46,7 @@ pub struct RustKitUnsignedTransaction {
     data_inputs: Vec<ErgoBox>,
     outputs: Vec<RustKitOutputCandidate>,
     fee: u64,
+    change_address: String,
 }
 
 impl RustKitUnsignedTransaction {
@@ -55,6 +56,7 @@ impl RustKitUnsignedTransaction {
             data_inputs: Vec::new(),
             outputs: Vec::new(),
             fee: 0,
+            change_address: String::new(),
         }
     }
 
@@ -76,6 +78,10 @@ impl RustKitUnsignedTransaction {
 
     pub fn set_min_fee(&mut self) {
         self.fee = SUGGESTED_TX_FEE;
+    }
+
+    pub fn set_change_address(&mut self, change_address: &str) {
+        self.change_address = change_address.to_string();
     }
 
     pub fn build(&mut self) {
