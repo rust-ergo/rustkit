@@ -1,7 +1,9 @@
+use std::{collections::HashMap, thread::Scope};
+
 use anyhow::Result;
 use ergo_chain_types::{Header, PreHeader, BlockId, EcPoint, Votes};
 use ergo_lib::{ergotree_ir::chain::ergo_box::ErgoBox, wallet::{box_selector::{SimpleBoxSelector, BoxSelection, BoxSelector}, tx_builder::TxBuilder, signing::TransactionContext, multi_sig::TransactionHintsBag}, chain::{ergo_box::box_builder::ErgoBoxCandidateBuilder, transaction::{unsigned::UnsignedTransaction, Transaction}, ergo_state_context::ErgoStateContext}};
-use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate, NonMandatoryRegisters}, token::{Token, TokenAmount, TokenId}, address::{Address}}, ergo_tree::ErgoTree};
+use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate, NonMandatoryRegisters, NonMandatoryRegisterId}, token::{Token, TokenAmount, TokenId}, address::{Address}}, ergo_tree::ErgoTree, mir::constant::Constant};
 
 use wallet::wallet::RustKitWallet;
 
@@ -21,11 +23,21 @@ impl RustKitOutputCandidate {
         }
     }
 
-    pub fn add_register(&mut self, register: NonMandatoryRegisters) {
+    pub fn add_register(&mut self, register_type: &str, register_number: u8, register_value: &str) {
         if self.registers.is_none() {
             self.registers = Some(Vec::new());
         }
-        self.registers.as_mut().unwrap().push(register);
+
+        let reg: NonMandatoryRegisters = match register_type {
+            "SColl" => {
+                let reg: NonMandatoryRegisters = SColl::new(register_number, register_value);
+                reg
+            }
+            _ => {
+                panic!("Register type not supported");
+            }
+        };
+        self.registers.as_mut().unwrap().push(reg);
     }
 }
 
@@ -109,5 +121,45 @@ impl TokenData {
             token_id,
             amount,
         }
+    }
+}
+
+pub struct SColl {
+    pub register: NonMandatoryRegisters,
+}
+
+impl SColl {
+    pub fn new(number: u8, value: &str) -> NonMandatoryRegisters {
+        let value_base16: Vec<u8> = base16::decode(value).unwrap();
+
+        let mut regsiter_id: NonMandatoryRegisterId = NonMandatoryRegisterId::R4;
+        match number {
+            4 => {
+                regsiter_id = NonMandatoryRegisterId::R4;
+            }
+            5 => {
+                regsiter_id = NonMandatoryRegisterId::R5;
+            }
+            6 => {
+                regsiter_id = NonMandatoryRegisterId::R6;
+            }
+            7 => {
+                regsiter_id = NonMandatoryRegisterId::R7;
+            }
+            8 => {
+                regsiter_id = NonMandatoryRegisterId::R8;
+            }
+            9 => {
+                regsiter_id = NonMandatoryRegisterId::R9;
+            }
+            _ => {
+                panic!("Invalid register number");
+            }
+        }
+        let constant = Constant::try_from(value_base16).unwrap();
+        let mut registers: HashMap<NonMandatoryRegisterId, Constant> = HashMap::new();
+        registers.insert(regsiter_id, constant);
+        let reg = NonMandatoryRegisters::new(registers).unwrap();
+        reg
     }
 }
