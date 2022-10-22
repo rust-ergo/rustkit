@@ -1,8 +1,7 @@
-use std::{collections::HashMap, thread::Scope, ptr::null};
+use std::{collections::HashMap};
 
-use anyhow::Result;
 use ergo_chain_types::{Header, PreHeader, BlockId, EcPoint, Votes};
-use ergo_lib::{ergotree_ir::chain::ergo_box::ErgoBox, wallet::{box_selector::{SimpleBoxSelector, BoxSelection, BoxSelector, self}, tx_builder::TxBuilder, signing::TransactionContext, multi_sig::TransactionHintsBag}, chain::{ergo_box::box_builder::ErgoBoxCandidateBuilder, transaction::{unsigned::UnsignedTransaction, Transaction}, ergo_state_context::ErgoStateContext}};
+use ergo_lib::{ergotree_ir::chain::ergo_box::ErgoBox, wallet::{box_selector::{SimpleBoxSelector, BoxSelection, BoxSelector}, tx_builder::TxBuilder, signing::TransactionContext, multi_sig::TransactionHintsBag}, chain::{ergo_box::box_builder::ErgoBoxCandidateBuilder, transaction::{unsigned::UnsignedTransaction, Transaction}, ergo_state_context::ErgoStateContext}};
 use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate, NonMandatoryRegisters, NonMandatoryRegisterId}, token::{Token, TokenAmount, TokenId}, address::{Address}}, ergo_tree::ErgoTree, mir::constant::Constant};
 
 use wallet::wallet::RustKitWallet;
@@ -68,7 +67,8 @@ impl RustKitUnsignedTransactionBuilder {
     }
 
     pub fn data_inputs(&mut self) {
-        todo!();
+        let data_inputs: Vec<ErgoBox> = Vec::new();
+        self.data_inputs = data_inputs;
     }
 
     pub fn outputs(&mut self, outputs: Vec<RustKitOutputCandidate>) {
@@ -132,6 +132,16 @@ impl RustKitUnsignedTransactionBuilder {
         self.unsigned_tx = Some(unsigned_transaction);
     }
 
+    pub fn sign(&mut self, config: &Config, wallet: &RustKitWallet) -> Transaction {
+        let last_10_headers: [Header; 10] = ergo_rustkit_endpoints::get_last_10_headers(&config.explorer_url, &config.node_url);
+        let preheader: PreHeader = Self::create_preheader(&last_10_headers[0]);
+        let transaction_context: TransactionContext<UnsignedTransaction> = TransactionContext::new(self.unsigned_tx.clone().unwrap(), self.inputs.clone(), self.data_inputs.clone()).unwrap();
+        let state_context: ErgoStateContext = ErgoStateContext::new(preheader, last_10_headers);
+        let transaction_hints: TransactionHintsBag = wallet.wallet.generate_commitments(transaction_context.clone(), &state_context).unwrap();
+        let signed_transaction: Transaction = wallet.wallet.sign_transaction(transaction_context, &state_context, Some(&transaction_hints)).unwrap();
+        signed_transaction
+    }
+    
     fn convert_outputs(opt: Vec<RustKitOutputCandidate>, height: u32) -> Vec<ErgoBoxCandidate> {
         let mut output_candidates: Vec<ErgoBoxCandidate> = Vec::new();
         for o in opt {
@@ -153,6 +163,18 @@ impl RustKitUnsignedTransactionBuilder {
             }
         }
         output_candidates
+    }
+
+    fn create_preheader(header: &Header) -> PreHeader {
+        let preheader_version: u8 = header.version;
+        let preheader_height: u32 = header.height;
+        let preheader_timestamp: u64 = header.timestamp;
+        let preheader_parent_id: &BlockId = &header.parent_id;
+        let preheader_nbits: u64 = header.n_bits;
+        let preheader_miner_pk: &Box<EcPoint> = &header.autolykos_solution.miner_pk;
+        let preheader_votes: &Votes = &header.votes;
+        let preheader: PreHeader = PreHeader { version: preheader_version, parent_id: preheader_parent_id.to_owned(), timestamp: preheader_timestamp, n_bits: preheader_nbits, height: preheader_height, miner_pk: preheader_miner_pk.to_owned(), votes: preheader_votes.to_owned() };
+        preheader
     }
 }
 
@@ -207,7 +229,7 @@ impl SColl {
     pub fn new(number: u8, value: &str) -> NonMandatoryRegisters {
         let value_base16: Vec<u8> = base16::decode(value).unwrap();
 
-        let mut regsiter_id: NonMandatoryRegisterId = NonMandatoryRegisterId::R4;
+        let regsiter_id: NonMandatoryRegisterId;
         match number {
             4 => {
                 regsiter_id = NonMandatoryRegisterId::R4;
