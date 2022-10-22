@@ -1,5 +1,20 @@
 # Changelog
 
+### 0.5.0 (Oct 22, 2022)
+
+- Start rework to make methods more powerful [(12d1057)](https://github.com/rust-ergo/rustkit/commit/12d105703199fc201e0e4aa51dae63cfa42f4631)
+- Seralize SColl type [(69b72c7)](https://github.com/rust-ergo/rustkit/commit/69b72c745dd2bca022173b2be886fe4b8958b5d7)
+- Add set_change_address [(625492a)](https://github.com/rust-ergo/rustkit/commit/625492a12f501f70f3cb63ee960447c1fd8a2f09)
+- Fix issue with token parsing [(15d95b0)](https://github.com/rust-ergo/rustkit/commit/15d95b0113796e56afc52a42882dc9ff045fe933)
+- Rename RustKitUnsignedTransaction [(c4a0cbc)](https://github.com/rust-ergo/rustkit/commit/c4a0cbce370716da081898722a9c988081726b0b)
+- Make into monorepo [(28c055b)](https://github.com/rust-ergo/rustkit/commit/28c055b03ac6155ffbc423ba31e0f1d7dc0412cb)
+- Monorepo [(b92c6de)](https://github.com/rust-ergo/rustkit/commit/b92c6deeaaf678486adf2d0d2790e4235665a064)
+- Fix issue with address derivation [(3f1f9f3)](https://github.com/rust-ergo/rustkit/commit/3f1f9f3ca2039bffd4a2205c3dc5ab7fe5f4b672)
+- Add funcs to sign and submit tx [(63c5336)](https://github.com/rust-ergo/rustkit/commit/63c5336048550b4f57abca672cd5ba542334ee26)
+- Pass ref of config to wallet [(5700b65)](https://github.com/rust-ergo/rustkit/commit/5700b65ebd40f9a4edf2ac17fe59c0408a490c66)
+- Update readme [(cb2a58f)](https://github.com/rust-ergo/rustkit/commit/cb2a58fdafeabcc7b591efd21ae728cb4e67854a)
+- Set version 0.5.0 [(df9258b)](https://github.com/rust-ergo/rustkit/commit/df9258bad6acb79524376650f7f424c2c78e1c3b)
+
 ### 0.4.1 (Oct 8, 2022)
 
 - Refactors [(935828d)](https://github.com/rust-ergo/rustkit/commit/935828db27400260782ca058ca230c5df533224e)
