@@ -13,7 +13,8 @@ pub struct RustKitWallet {
 }
 
 impl RustKitWallet {
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: &Config) -> Self {
+        let config: Config = config.to_owned();
         let mnemonic: String = config.get_mnemonic();
         let mnemonic_password: String = config.get_mnemonic_password();
         let seed = Mnemonic::to_seed(&mnemonic, &mnemonic_password);
