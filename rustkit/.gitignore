@@ -1,0 +1,8 @@
+/target
+/Cargo.lock
+
+main.rs
+
+/.idea
+
+config.json
