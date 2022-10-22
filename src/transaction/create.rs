@@ -42,7 +42,7 @@ impl RustKitOutputCandidate {
     }
 }
 
-pub struct RustKitUnsignedTransaction {
+pub struct RustKitUnsignedTransactionBuilder {
     inputs: Vec<ErgoBox>,
     data_inputs: Vec<ErgoBox>,
     outputs: Vec<RustKitOutputCandidate>,
@@ -51,9 +51,9 @@ pub struct RustKitUnsignedTransaction {
     pub unsigned_tx: Option<UnsignedTransaction>,
 }
 
-impl RustKitUnsignedTransaction {
+impl RustKitUnsignedTransactionBuilder {
     pub fn new() -> Self {
-        RustKitUnsignedTransaction {
+        RustKitUnsignedTransactionBuilder {
             inputs: Vec::new(),
             data_inputs: Vec::new(),
             outputs: Vec::new(),
