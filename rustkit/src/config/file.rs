@@ -3,6 +3,7 @@ use serde_json::Value;
 
 #[derive(Clone)]
 pub struct Config {
+    config_json: Value,
     mnemonic: String,
     mnemonic_password: String,
     pub network: String,
@@ -29,6 +30,7 @@ impl Config {
             explorer_url = None;
         }
         Config {
+            config_json: json.clone(),
             mnemonic: json["mnemonic"].as_str().expect("Cannot parse mnemonic").to_owned(),
             mnemonic_password: json["mnemonicPassword"].as_str().expect("Cannot parse mnemonic password").to_owned(),
             network: json["network"].as_str().expect("Cannot parse network").to_owned(),
@@ -43,5 +45,11 @@ impl Config {
 
     pub fn get_mnemonic_password(&self) -> String {
         self.mnemonic_password.clone()
+    }
+
+    pub fn get_parameter(&self, parameter: &str) {
+        let params: &Value = &self.config_json["parameters"];
+        let val: &str = params[parameter].as_str().expect(&format!("Cannot get config file parameter: {}", parameter));
+        println!("Config file parameter: {}", val);
     }
 }

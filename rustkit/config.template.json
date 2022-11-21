@@ -3,5 +3,6 @@
     "mnemonicPassword": "",
     "network": "",
     "nodeUrl": "",
-    "explorerUrl": ""
+    "explorerUrl": "",
+    "parameters": {}
 }

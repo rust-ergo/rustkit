@@ -2,7 +2,7 @@ use std::{collections::HashMap};
 
 use ergo_chain_types::{Header, PreHeader, BlockId, EcPoint, Votes};
 use ergo_lib::{ergotree_ir::chain::ergo_box::ErgoBox, wallet::{box_selector::{SimpleBoxSelector, BoxSelection, BoxSelector}, tx_builder::TxBuilder, signing::TransactionContext, multi_sig::TransactionHintsBag}, chain::{ergo_box::box_builder::ErgoBoxCandidateBuilder, transaction::{unsigned::UnsignedTransaction, Transaction}, ergo_state_context::ErgoStateContext}};
-use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate, NonMandatoryRegisters, NonMandatoryRegisterId}, token::{Token, TokenAmount, TokenId}, address::{Address}}, ergo_tree::ErgoTree, mir::constant::Constant};
+use ergotree_ir::{chain::{ergo_box::{box_value::BoxValue, ErgoBoxCandidate, NonMandatoryRegisters, NonMandatoryRegisterId}, token::{Token, TokenAmount, TokenId}, address::{Address}}, ergo_tree::ErgoTree, mir::constant::Constant, bigint256::BigInt256};
 
 use wallet::wallet::RustKitWallet;
 
@@ -31,6 +31,10 @@ impl RustKitOutputCandidate {
         let reg: NonMandatoryRegisters = match register_type {
             "SColl" => {
                 let reg: NonMandatoryRegisters = SColl::new(register_number, register_value);
+                reg
+            }
+            "SLong" => {
+                let reg: NonMandatoryRegisters = SLong::new(register_number, register_value.parse().unwrap());
                 reg
             }
             _ => {
@@ -254,6 +258,45 @@ impl SColl {
             }
         }
         let constant: Constant = Constant::try_from(value_base16).unwrap();
+        let mut registers: HashMap<NonMandatoryRegisterId, Constant> = HashMap::new();
+        registers.insert(regsiter_id, constant);
+        let reg: NonMandatoryRegisters = NonMandatoryRegisters::new(registers).unwrap();
+        reg
+    }
+}
+
+pub struct SLong {
+    pub register: NonMandatoryRegisters,
+}
+
+impl SLong {
+    pub fn new(number: u8, value: u64) -> NonMandatoryRegisters {
+        let regsiter_id: NonMandatoryRegisterId;
+        match number {
+            4 => {
+                regsiter_id = NonMandatoryRegisterId::R4;
+            }
+            5 => {
+                regsiter_id = NonMandatoryRegisterId::R5;
+            }
+            6 => {
+                regsiter_id = NonMandatoryRegisterId::R6;
+            }
+            7 => {
+                regsiter_id = NonMandatoryRegisterId::R7;
+            }
+            8 => {
+                regsiter_id = NonMandatoryRegisterId::R8;
+            }
+            9 => {
+                regsiter_id = NonMandatoryRegisterId::R9;
+            }
+            _ => {
+                panic!("Invalid register number");
+            }
+        }
+        let bigint: BigInt256 = BigInt256::try_from(value as i64).unwrap();
+        let constant: Constant = Constant::try_from(bigint).unwrap();
         let mut registers: HashMap<NonMandatoryRegisterId, Constant> = HashMap::new();
         registers.insert(regsiter_id, constant);
         let reg: NonMandatoryRegisters = NonMandatoryRegisters::new(registers).unwrap();

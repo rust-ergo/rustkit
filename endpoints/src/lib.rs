@@ -11,6 +11,23 @@ use ergo_lib::chain::ergo_state_context::Headers;
 use crate::utils::consts::{MAINNET_EXPLORER_API_BASE_URL, MAINNET_NODE_URL};
 use crate::utils::format::remove_quotes;
 
+pub fn get_wallet_boxes(node_url: &str) -> Option<Vec<ErgoBox>> {
+    let boxes_json: Result<Value> = request_wallet_boxes(node_url);
+    if boxes_json.is_err() {
+        return None;
+    }
+    let boxes_json: Value = boxes_json.unwrap();
+    let boxes: Vec<ErgoBox> = serde_json::from_value(boxes_json).unwrap();
+    Some(boxes)
+} 
+
+fn request_wallet_boxes(node_url: &str) -> Result<Value> {
+    let url: String = format!("{}/wallet/boxes/unspent?minConfirmations=-1&maxConfirmations=-1&minInclusionHeight=0&maxInclusionHeight=-1", node_url);
+    let response: String = reqwest::blocking::get(&url)?.text()?;
+    let json: Value = serde_json::from_str(&response)?;
+    Ok(json)
+}
+
 fn request_unspent_boxes_for_address(address: &str, explorer_url: Option<String>) -> Result<Value> {
     let base_url: String = match explorer_url {
         Some(url) => url,
@@ -38,30 +55,26 @@ pub fn get_unspent_boxes_for_address(address: &str, explorer_url: Option<String>
     Some(box_vec)
 }
 
-fn request_current_height(explorer_url: Option<String>) -> Result<Value> {
-    let base_url: String = match explorer_url {
+pub fn get_current_height(node_url: Option<String>) -> Option<i64> {
+    let url: String = match node_url {
         Some(url) => url,
-        None => MAINNET_EXPLORER_API_BASE_URL.to_string(),
+        None => MAINNET_NODE_URL.to_string(),
     };
-    let url: String = format!("{}/api/v1/blocks?limit=1", base_url);
-    let response: String = reqwest::blocking::get(&url)?.text()?;
-    let json: Value = serde_json::from_str(&response)?;
-    Ok(json)
-}
-
-/// Returns the current height of the mainnet
-pub fn get_current_height(explorer_url: Option<String>) -> u64 {
-    let json: Value = request_current_height(explorer_url).unwrap();
-    let height: u64 = json["total"].as_u64().unwrap();
-    height
+    let node_info: Option<Value> = get_node_info(Some(url));
+    if node_info.is_none() {
+        return None;
+    }
+    let node_info: Value = node_info.unwrap();
+    let height: i64 = node_info["fullHeight"].as_i64().unwrap();
+    Some(height)
 }
 
 /// Get the last 10 block headers
-pub fn get_last_10_headers(explorer_url: Option<String>, node_url: Option<String>) -> Headers {
-    let height: u32 = get_current_height(explorer_url) as u32;
+pub fn get_last_10_headers(node_url: Option<String>) -> Headers {
+    let height: i64 = get_current_height(node_url.clone()).unwrap();
     let mut headers_vec: Vec<Header> = Vec::new();
     for i in 0..10 {
-      let height: u32 = height - i;
+      let height: i64 = height - i;
       let header_id: String = get_header_id_by_height(height, node_url.clone()).unwrap();
       let header: Header = get_header_by_header_id(header_id, node_url.clone());
       headers_vec.push(header);
@@ -82,7 +95,7 @@ fn get_header_by_header_id(header_id: String, node_url: Option<String>) -> Heade
     header
 }
 
-fn get_header_id_by_height(height: u32, node_url: Option<String>) -> Result<String> {
+fn get_header_id_by_height(height: i64, node_url: Option<String>) -> Result<String> {
     let base_url: String = match node_url {
         Some(url) => url,
         None => MAINNET_NODE_URL.to_string(),
@@ -113,4 +126,24 @@ pub fn submit(transaction_json: String, node_url: Option<String>) -> Result<Stri
   
     let response_body: String = response.text()?;
     Ok(response_body)
+}
+
+pub fn get_node_info(node_url: Option<String>) -> Option<Value> {
+    let node_info: Result<Value> = request_node_info(node_url);
+    match node_info {
+        Ok(info) => Some(info),
+        Err(_) => None,
+    }
+}
+
+fn request_node_info(node_url: Option<String>) -> Result<Value> {
+    let base_url: String = match node_url {
+        Some(url) => url,
+        None => MAINNET_NODE_URL.to_string(),
+    };
+    let url: String = format!("{}/info", base_url);
+    let resp: String = reqwest::blocking::get(url).unwrap().text().unwrap();
+    let data: Value = serde_json::from_str(&resp).unwrap();
+    let node_info: Value = serde_json::from_value(data).unwrap();
+    Ok(node_info)
 }

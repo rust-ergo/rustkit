@@ -6,8 +6,9 @@ use crate::{utils::format::remove_quotes, config::{file::Config}};
 
 /// RustKit wallet
 pub struct RustKitWallet {
-    secret_key: SecretKey,
+    extended_secret_key: ExtSecretKey,
     pub index_0_address: String,
+    addresses: Vec<Address>,
     pub wallet: Wallet,
     config: Config,
 }
@@ -26,29 +27,59 @@ impl RustKitWallet {
         let public_key: ExtPubKey = derived_extended_secret_key.public_key().unwrap();
         let address: Address = Address::from(public_key);
         let wallet: Wallet = Wallet::from_secrets(vec![secret_key.clone()]);
+        let addresses: Vec<Address> = Vec::new();
         match config.network.as_str() {
             "mainnet" => {
                 let address_encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Mainnet);
                 let index_0_address: String = address_encoder.address_to_str(&address);
                 let index_0_address: String = remove_quotes(index_0_address);
-                RustKitWallet { secret_key, index_0_address, wallet, config }
+                RustKitWallet { extended_secret_key, index_0_address, addresses, wallet, config }
             },
             "testnet" => {
                 let address_encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Testnet);
                 let index_0_address: String = address_encoder.address_to_str(&address);
                 let index_0_address: String = remove_quotes(index_0_address);
-                RustKitWallet { secret_key, index_0_address, wallet, config }
+                RustKitWallet { extended_secret_key, index_0_address, addresses, wallet, config }
+            },
+            _ => panic!("Invalid network"),
+        }
+    }
+
+    pub fn init(&mut self) {
+        let addresses: Vec<Address> = self.get_addresses();
+        self.addresses = addresses;
+    }
+
+    pub fn get_eip_3_address(&self, index: u32) -> String {
+        let address: Address = self.addresses.get(index as usize).unwrap().to_owned();
+        match self.config.network.as_str() {
+            "mainnet" => {
+                let address_encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Mainnet);
+                let address: String = address_encoder.address_to_str(&address);
+                let address: String = remove_quotes(address);
+                address
+            },
+            "testnet" => {
+                let address_encoder: AddressEncoder = AddressEncoder::new(NetworkPrefix::Testnet);
+                let address: String = address_encoder.address_to_str(&address);
+                let address: String = remove_quotes(address);
+                address
             },
             _ => panic!("Invalid network"),
         }
     }
 
     /// Get sigma-rust address type from wallet
-    pub fn get_address(&self) -> Address {
-        let master_key: &SecretKey = &self.secret_key.clone();
-        let master_key: SecretKey = master_key.to_owned();
-        let address: Address = master_key.get_address_from_public_image();
-        address
+    pub fn get_addresses(&self) -> Vec<Address> {
+        let mut address_vec: Vec<Address> = Vec::new();
+        for i in 0..20 {
+            let path: DerivationPath = DerivationPath::new(ChildIndexHardened::from_31_bit(0).unwrap(), vec![ChildIndexNormal::normal(i).unwrap()]);
+            let derived_extended_secret_key: ExtSecretKey = self.extended_secret_key.derive(path).unwrap();
+            let public_key: ExtPubKey = derived_extended_secret_key.public_key().unwrap();
+            let address: Address = Address::from(public_key);
+            address_vec.push(address);
+        }
+        return address_vec;
     }
 
     /// Get a p2pk address as a string from wallet
